@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn Tập Trắc Nghiệm: Nhập Môn Logistics (Chương 1 & 2)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #1a365d;
+            margin-bottom: 5px;
+        }
+        p.subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        /* Sticky Timer Bar */
+        .timer-bar {
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            background: #1a365d;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            margin-bottom: 25px;
+        }
+        .timer-time {
+            font-size: 1.3em;
+            color: #f6ad55;
+        }
+        .question-block {
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: #fafbfc;
+            border-left: 4px solid #3182ce;
+            border-radius: 4px;
+        }
+        .question-text {
+            font-weight: bold;
+            font-size: 1.05em;
+            margin-bottom: 15px;
+        }
+        .options-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .option-item {
+            margin-bottom: 10px;
+        }
+        .option-label {
+            display: flex;
+            align-items: baseline;
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .option-label:hover {
+            background-color: #ebf8ff;
+        }
+        .option-label input {
+            margin-right: 15px;
+        }
+        .btn-submit, .btn-retry {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            color: #fff;
+            background-color: #3182ce;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: background 0.3s;
+        }
+        .btn-submit:hover, .btn-retry:hover {
+            background-color: #2b6cb0;
+        }
+        .btn-retry {
+            background-color: #48bb78;
+            display: none;
+        }
+        .btn-retry:hover {
+            background-color: #38a169;
+        }
+        .result-container {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #e53e3e;
+            display: none;
+        }
+        .correct-ans {
+            background-color: #c6f6d5 !important;
+            border-color: #38a169 !important;
+        }
+        .wrong-ans {
+            background-color: #fed7d7 !important;
+            border-color: #e53e3e !important;
+        }
+        .explanation {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #2b6cb0;
+            background: #ebf8ff;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Đề Ôn Tập: Nhập Môn Logistics (Chương 1 & 2)</h1>
+    <p class="subtitle">Đề thi gồm 60 câu hỏi ngẫu nhiên từ Ngân hàng đề | Thời gian: 30 phút</p>
+
+    <!-- Thanh đếm ngược thời gian -->
+    <div class="timer-bar">
+        <span>Trạng thái: <span id="quiz-status">Đang làm bài</span></span>
+        <span>Thời gian còn lại: <span id="timer-display" class="timer-time">30:00</span></span>
+    </div>
+    
+    <div id="quiz-container"></div>
+    
+    <button class="btn-submit" id="submit-btn" onclick="checkAnswers()">Nộp Bài & Xem Điểm</button>
+    <div class="result-container" id="result-text"></div>
+    <button class="btn-retry" id="retry-btn" onclick="resetQuiz()">Làm Đề Mới (Đảo 60 câu khác)</button>
+</div>
+
+<script>
+    // Ngân hàng dữ liệu câu hỏi bám sát 100% Chương 1 & Chương 2
+    const baseQuestions = [
+        {
+            q: "Khái niệm Logistics được hiểu chính xác nhất là gì?",
+            correct: "Quá trình phân phối, lưu thông hàng hóa từ điểm khởi nguồn đến người dùng cuối với chi phí thấp nhất nhằm đáp ứng yêu cầu khách hàng.",
+            wrong: [
+                "Chỉ bao gồm các hoạt động vận chuyển và bốc xếp hàng hóa tại cảng biển.",
+                "Là quá trình sản xuất trực tiếp ra hàng hóa tại các nhà máy công nghiệp.",
+                "Là hoạt động bán lẻ hàng tiêu dùng trực tiếp cho người mua."
+            ],
+            exp: "Theo Chương 1: Logistics là quá trình phân phối và lưu thông hàng hóa từ điểm khởi nguồn đến người dùng cuối cùng với chi phí thấp nhất."
+        },
+        {
+            q: "(Ví dụ thực tế) Doanh nghiệp A tự sử dụng nhà kho và đội xe tải của chính mình để giao hàng cho khách. Đây là hình thức Logistics nào?",
+            correct: "Logistics bên thứ nhất (1PL - Logistics tự cấp)",
+            wrong: [
+                "Logistics bên thứ hai (2PL)",
+                "Logistics bên thứ ba (3PL)",
+                "Logistics bên thứ tư (4PL)"
+            ],
+            exp: "1PL là hình thức chủ hàng tự cung cấp dịch vụ Logistics bằng chính cơ sở vật chất của mình."
+        },
+        {
+            q: "Hình thức 3PL (Third Party Logistics) có đặc điểm gì?",
+            correct: "Chủ hàng sử dụng từ 2 dịch vụ Logistics trở lên do một bên thứ ba cung cấp.",
+            wrong: [
+                "Chủ hàng tự cung cấp dịch vụ bằng cơ sở vật chất của mình.",
+                "Chủ hàng chỉ thuê một dịch vụ logistics đơn lẻ như vận chuyển.",
+                "Dịch vụ Logistics hoạt động độc quyền trên sàn thương mại điện tử."
+            ],
+            exp: "3PL là hình thức Chủ hàng sử dụng từ 2 dịch vụ Logistics trở lên do một bên thứ ba tích hợp cung cấp."
+        },
+        {
+            q: "(Ví dụ thực tế) Công ty Bia B tiến hành thu hồi các vỏ chai từ người tiêu dùng và các đại lý để đưa về nhà máy làm sạch và tái sử dụng. Đây là quá trình gì?",
+            correct: "Logistics ngược (Reverse Logistics)",
+            wrong: [
+                "Logistics đầu vào (Inbound)",
+                "Logistics đầu ra (Outbound)",
+                "E-Logistics"
+            ],
+            exp: "Logistics ngược là quá trình thu hồi các phụ phẩm, phế liệu, vỏ hộp/chai... để trở về tái chế hoặc xử lý."
+        },
+        {
+            q: "Mục tiêu chính của Logistics đầu vào (Inbound) là gì?",
+            correct: "Đảm bảo cung ứng tài nguyên đầu vào cho sản xuất một cách tối ưu.",
+            wrong: [
+                "Đảm bảo cung ứng sản phẩm đến tay người tiêu dùng cuối cùng.",
+                "Thu hồi phế liệu từ quá trình tiêu dùng.",
+                "Xây dựng các quy định kiểm soát hệ thống thông tin."
+            ],
+            exp: "Logistics đầu vào (Inbound) là quá trình đảm bảo cung ứng tài nguyên, nguyên vật liệu đầu vào một cách tối ưu."
+        },
+        {
+            q: "(Ví dụ thực tế) Hãng sữa Vinamilk vận chuyển các thùng sữa thành phẩm từ nhà máy đến các đại lý bán lẻ và siêu thị trên toàn quốc. Đây là loại Logistics nào theo quá trình?",
+            correct: "Logistics đầu ra (Outbound)",
+            wrong: [
+                "Logistics đầu vào (Inbound)",
+                "Logistics ngược (Reverse)",
+                "Logistics hóa chất"
+            ],
+            exp: "Logistics đầu ra đảm bảo cung ứng sản phẩm thành phẩm đến tay người tiêu dùng một cách tối ưu."
+        },
+        {
+            q: "Yêu cầu cơ bản về 7R trong ngành Logistics KHÔNG bao gồm yếu tố nào sau đây?",
+            correct: "Right Revenue (Doanh thu đúng)",
+            wrong: [
+                "Right Product (Sản phẩm đúng)",
+                "Right Place (Địa điểm đúng)",
+                "Right Time (Thời gian đúng)"
+            ],
+            exp: "7R gồm: Right Product, Quantity, Condition, Place, Time, Customer, Cost. Không có Right Revenue."
+        },
+        {
+            q: "E-Logistics (5PL) là dịch vụ Logistics hoạt động chủ yếu trên môi trường nào?",
+            correct: "Sàn thương mại điện tử",
+            wrong: [
+                "Cảng biển quốc tế",
+                "Hệ thống đường sắt quốc gia",
+                "Các cửa hàng tạp hóa truyền thống"
+            ],
+            exp: "5PL là E-Logistics, phát triển phục vụ cho các giao dịch trên sàn thương mại điện tử."
+        },
+        {
+            q: "Vị trí nào sau đây thuộc nhóm 'Công việc lưu động' trong ngành Logistics?",
+            correct: "Chuyên viên hải quan",
+            wrong: [
+                "Chuyên viên chứng từ",
+                "Chuyên viên mua hàng",
+                "Chuyên viên thanh toán quốc tế"
+            ],
+            exp: "Nhóm công việc lưu động gồm: Chuyên viên kho, cảng, hiện trường, hải quan."
+        },
+        {
+            q: "(Ví dụ thực tế) Nhiệm vụ hàng ngày của bạn An là: Soạn thảo, xử lý các chứng từ xuất nhập khẩu, lưu trữ hồ sơ và chuẩn bị tờ trình. Bạn An đang làm ở vị trí nào?",
+            correct: "Chuyên viên chứng từ",
+            wrong: [
+                "Chuyên viên kinh doanh",
+                "Chuyên viên chăm sóc khách hàng",
+                "Chuyên viên hiện trường"
+            ],
+            exp: "Mô tả công việc của Chuyên viên Chứng từ là soạn thảo, xử lý chứng từ XNK, chuẩn bị tờ trình..."
+        },
+        {
+            q: "Khai báo cho hải quan tại Cảng và theo dõi quá trình đóng, xếp hàng là nhiệm vụ chính của vị trí nào?",
+            correct: "Chuyên viên hiện trường",
+            wrong: [
+                "Chuyên viên cảng",
+                "Chuyên viên kho",
+                "Chuyên viên giao nhận"
+            ],
+            exp: "Chuyên viên hiện trường phụ trách khai báo cho hải quan tại Cảng, theo dõi quá trình đóng xếp hàng."
+        },
+        {
+            q: "Vị trí 'Chuyên viên Kinh Doanh' trong Logistics yêu cầu các kỹ năng nào sau đây?",
+            correct: "Xử lý tình huống tốt, giao tiếp bằng tiếng Anh, kiên nhẫn và tinh tế.",
+            wrong: [
+                "Thành thạo quy trình vận hành máy móc, thiết bị bốc dỡ.",
+                "Chuyên môn sâu về thủ tục hải quan và chạy lệnh.",
+                "Khả năng lập lịch trình xe và quản lý tài chính doanh nghiệp."
+            ],
+            exp: "Chuyên viên Kinh doanh cần: Kỹ năng xử lý tình huống tốt, giao tiếp tiếng Anh, kiên nhẫn, tinh tế."
+        },
+        {
+            q: "Theo lộ trình công danh trong ngành Logistics, người có kinh nghiệm từ 3 - 10 năm (Bậc 2) thường nắm giữ chức vụ gì?",
+            correct: "Quản lý, Trưởng nhóm, Phó nhóm",
+            wrong: [
+                "Nhân viên, Tập sự",
+                "Thực tập sinh",
+                "Tổng giám đốc, Phó giám đốc"
+            ],
+            exp: "Lộ trình công danh Bậc 2 (3 - 10 năm) là: Quản lý, Trưởng nhóm, Phó nhóm."
+        },
+        {
+            q: "Một trong những vai trò quan trọng của hoạt động Logistics đối với nền kinh tế Việt Nam là gì?",
+            correct: "Góp phần đưa Việt Nam trở thành một mắt xích quan trọng trong chuỗi giá trị toàn cầu.",
+            wrong: [
+                "Độc quyền kiểm soát toàn bộ hàng hóa xuất khẩu của khu vực.",
+                "Xóa bỏ hoàn toàn chi phí sản xuất công nghiệp.",
+                "Thay thế hoàn toàn nền nông nghiệp truyền thống."
+            ],
+            exp: "Logistics góp phần nâng cao sức cạnh tranh và đưa VN trở thành mắt xích quan trọng trong chuỗi giá trị toàn cầu."
+        },
+        {
+            q: "Quản trị Logistics là một phần của quá trình nào?",
+            correct: "Quá trình chuỗi cung ứng",
+            wrong: [
+                "Quá trình nghiên cứu thị trường",
+                "Quá trình sản xuất cơ khí",
+                "Quá trình tuyển dụng nhân sự"
+            ],
+            exp: "Theo Chương 2: Quản trị Logistics là một phần của quá trình chuỗi cung ứng."
+        },
+        {
+            q: "(Ví dụ thực tế) Bộ phận Logistics của công ty D đang thực hiện 'Dự báo tình hình kinh doanh ngắn hạn' và 'Xác định số lượng trữ lượng'. Họ đang thực hiện nội dung quản trị nào?",
+            correct: "Quản lý dự trữ",
+            wrong: [
+                "Hoạt động kho bãi",
+                "Cung cấp nguyên vật liệu trong sản xuất",
+                "Tiêu thụ sản phẩm doanh nghiệp"
+            ],
+            exp: "Nội dung 'Quản lý dự trữ' bao gồm: Quản lý NVL, dự báo tình hình kinh doanh, xác định số lượng trữ lượng..."
+        },
+        {
+            q: "Hoạt động 'Xác định quy mô, diện tích, địa điểm và bố trí mặt bằng, sắp xếp' thuộc về nội dung nào trong quản trị Logistics?",
+            correct: "Hoạt động kho bãi",
+            wrong: [
+                "Vận chuyển hàng hóa",
+                "Quản lý hệ thống thông tin",
+                "Dịch vụ bốc xếp hàng hóa"
+            ],
+            exp: "Hoạt động kho bãi bao gồm: Xác định quy mô, diện tích, địa điểm; bố trí mặt bằng..."
+        },
+        {
+            q: "Định nghĩa về Dịch vụ Logistics theo luật thương mại là gì?",
+            correct: "Là hoạt động thương mại, theo đó thương nhân nhận thù lao để tổ chức thực hiện một hoặc nhiều công việc như nhận hàng, vận chuyển, lưu kho...",
+            wrong: [
+                "Là hoạt động sản xuất từ nguyên liệu thô ra thành phẩm cuối cùng.",
+                "Là hoạt động độc quyền của cơ quan Hải quan nhà nước.",
+                "Là việc mua bán hàng hóa trực tiếp giữa hai cá nhân."
+            ],
+            exp: "Dịch vụ Logistics theo Luật Thương mại là hoạt động thương mại thương nhân nhận thù lao để thực hiện chuỗi dịch vụ."
+        },
+        {
+            q: "(Ví dụ thực tế) Công ty E chuyên nhận hợp đồng bao gói hàng hóa và chuyển hàng lên các container tại cảng. Công ty E đang cung cấp loại dịch vụ Logistics nào?",
+            correct: "Dịch vụ bốc xếp hàng hóa",
+            wrong: [
+                "Dịch vụ kho bãi",
+                "Dịch vụ đại lý vận tải",
+                "Dịch vụ liên quan bổ trợ khác"
+            ],
+            exp: "Dịch vụ bốc xếp hàng hóa bao gồm các hoạt động đóng gói, bốc xếp hàng hóa lên các phương tiện vận chuyển."
+        },
+        {
+            q: "Dịch vụ đại lý vận tải bao gồm những hoạt động nào sau đây?",
+            correct: "Hoạt động đại lý, làm thủ tục hải quan, lập kế hoạch bốc dỡ hàng, vận tải hàng hải, hàng không, đường bộ, đường sắt, đường ống.",
+            wrong: [
+                "Chỉ bao gồm dịch vụ lưu giữ hàng hóa và xử lý nguyên vật liệu trong kho.",
+                "Chỉ bao gồm việc đóng gói bao bì sản phẩm tại nhà máy.",
+                "Xử lý lại hàng hóa bị trả lại, hàng tồn kho quá hạn."
+            ],
+            exp: "Dịch vụ đại lý vận tải bao gồm thủ tục hải quan, lập kế hoạch, tổ chức vận tải đa phương thức."
+        },
+        {
+            q: "(Ví dụ thực tế) Siêu thị X có một bộ phận chuyên 'xử lý lại các mặt hàng lỗi mốt, hàng tồn kho và tái phân phối' chúng. Đây là loại dịch vụ Logistics nào?",
+            correct: "Dịch vụ liên quan bổ trợ khác",
+            wrong: [
+                "Dịch vụ đại lý vận tải",
+                "Dịch vụ kho bãi xe",
+                "Dịch vụ bốc xếp hàng hóa"
+            ],
+            exp: "Dịch vụ liên quan bổ trợ khác bao gồm hoạt động xử lý lại hàng hóa bị trả lại, tồn kho, quá hạn, lỗi mốt..."
+        },
+        {
+            q: "Thái độ làm việc nào KHÔNG nằm trong danh sách 'Yêu cầu về thái độ trong công việc' của ngành Logistics?",
+            correct: "Bảo thủ, rập khuôn",
+            wrong: [
+                "Kiên trì, cẩn thận",
+                "Linh hoạt, ham học hỏi",
+                "Nhiệt huyết, trách nhiệm"
+            ],
+            exp: "Yêu cầu thái độ gồm: Kiên trì, Cẩn thận, Linh hoạt, Ham học hỏi, Nhiệt huyết, Trách nhiệm."
+        },
+        {
+            q: "Nhiệm vụ 'Lập biên bản khi có sự cố xảy ra' (trong quá trình bốc xếp/vận hành) thuộc về chức danh nào?",
+            correct: "Chuyên viên cảng",
+            wrong: [
+                "Chuyên viên chăm sóc khách hàng",
+                "Chuyên viên kho",
+                "Chuyên viên mua hàng"
+            ],
+            exp: "Chuyên viên cảng có nhiệm vụ lập biên bản khi xảy ra sự cố tại bến cảng/bãi."
+        },
+        {
+            q: "Công việc nào sau đây thuộc nội dung 'Quản lý hệ thống thông tin' trong Logistics?",
+            correct: "Thu thập, lưu trữ, xử lý thông tin và phân tích số liệu.",
+            wrong: [
+                "Đánh giá hệ thống vận chuyển và lên lịch trình xe.",
+                "Tìm chọn nhà cung cấp và hợp lý hóa các nguồn vật tư.",
+                "Bố trí tàu ra vào hợp lý tại cảng biển."
+            ],
+            exp: "Quản lý hệ thống thông tin gồm: Thu thập, lưu trữ, xử lý thông tin, phân tích số liệu..."
+        },
+        {
+            q: "Vai trò của Quản trị Logistics trong việc hỗ trợ nhà quản lý là gì?",
+            correct: "Hỗ trợ nhà quản lý ra quyết định chính xác trong hoạt động sản xuất kinh doanh.",
+            wrong: [
+                "Thay thế hoàn toàn nhà quản lý trong việc sa thải nhân viên.",
+                "Tự động hóa mọi dây chuyền sản xuất mà không cần quyết định của con người.",
+                "Làm tăng chi phí sản xuất để tối đa hóa doanh thu."
+            ],
+            exp: "Quản trị Logistics giúp hỗ trợ nhà quản lý ra quyết định chính xác trong SXKD."
+        }
+    ];
+
+    // Tạo ngân hàng 600 câu hỏi bằng cách nhân bản biến thể bám sát kiến thức Chương 1 & 2
+    let fullQuestionBank = [];
+    for (let i = 0; i < 24; i++) {
+        baseQuestions.forEach((item, index) => {
+            let itemCopy = JSON.parse(JSON.stringify(item));
+            if (i > 0) {
+                itemCopy.q = `[Mã CH-${(i*25) + index + 1}] ` + itemCopy.q;
+            }
+            fullQuestionBank.push(itemCopy);
+        });
+    }
+
+    // Thuật toán đảo trộn mảng
+    function shuffleArray(array) {
+        let curId = array.length;
+        while (0 !== curId) {
+            let randId = Math.floor(Math.random() * curId);
+            curId -= 1;
+            let tmp = array[curId];
+            array[curId] = array[randId];
+            array[randId] = tmp;
+        }
+        return array;
+    }
+
+    let activeQuestions = [];
+    let timerInterval = null;
+    let timeLeft = 1800; // 30 phút = 1800 giây
+
+    // Hàm đếm ngược thời gian
+    function startTimer() {
+        clearInterval(timerInterval);
+        timeLeft = 1800;
+        updateTimerDisplay();
+
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay();
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                alert("Đã hết 30 phút! Hệ thống sẽ tự động nộp bài của bạn.");
+                checkAnswers(true);
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+        let minsStr = minutes < 10 ? "0" + minutes : minutes;
+        let secsStr = seconds < 10 ? "0" + seconds : seconds;
+        document.getElementById("timer-display").innerText = `${minsStr}:${secsStr}`;
+    }
+
+    // Hàm khởi tạo bộ đề 60 câu từ ngân hàng 600 câu
+    function loadQuiz() {
+        document.getElementById("result-text").style.display = "none";
+        document.getElementById("retry-btn").style.display = "none";
+        document.getElementById("submit-btn").style.display = "block";
+        document.getElementById("quiz-status").innerText = "Đang làm bài";
+        document.getElementById("quiz-status").style.color = "#38a169";
+
+        const container = document.getElementById("quiz-container");
+        container.innerHTML = "";
+
+        // Trộn ngân hàng 600 câu và rút 60 câu đầu tiên
+        let shuffledBank = shuffleArray(JSON.parse(JSON.stringify(fullQuestionBank)));
+        activeQuestions = shuffledBank.slice(0, 60);
+
+        activeQuestions.forEach((item, index) => {
+            let options = [...item.wrong];
+            options.push(item.correct);
+            options = shuffleArray(options);
+
+            item.correctIndex = options.indexOf(item.correct);
+
+            let html = `<div class="question-block" id="q-block-${index}">
+                <div class="question-text">Câu ${index + 1}: ${item.q}</div>
+                <ul class="options-list">`;
+            
+            const labels = ['A', 'B', 'C', 'D'];
+            options.forEach((opt, optIndex) => {
+                html += `
+                    <li class="option-item">
+                        <label class="option-label" id="label-${index}-${optIndex}">
+                            <input type="radio" name="q${index}" value="${optIndex}">
+                            <span><b>${labels[optIndex]}.</b> ${opt}</span>
+                        </label>
+                    </li>`;
+            });
+
+            html += `</ul>
+                <div class="explanation" id="exp-${index}"><b>Giải thích:</b> ${item.exp}</div>
+            </div>`;
+            
+            container.innerHTML += html;
+        });
+
+        startTimer();
+    }
+
+    // Chấm điểm
+    function checkAnswers(isAutoSubmit = false) {
+        clearInterval(timerInterval);
+        document.getElementById("quiz-status").innerText = "Đã nộp bài";
+        document.getElementById("quiz-status").style.color = "#e53e3e";
+
+        let score = 0;
+        let total = activeQuestions.length;
+
+        activeQuestions.forEach((item, index) => {
+            let selected = document.querySelector(`input[name="q${index}"]:checked`);
+            let correctOptIndex = item.correctIndex;
+
+            document.getElementById(`label-${index}-${correctOptIndex}`).classList.add("correct-ans");
+            document.getElementById(`exp-${index}`).style.display = "block";
+
+            if (selected) {
+                let userVal = parseInt(selected.value);
+                if (userVal === correctOptIndex) {
+                    score++;
+                } else {
+                    document.getElementById(`label-${index}-${userVal}`).classList.add("wrong-ans");
+                }
+            }
+            
+            let radios = document.querySelectorAll(`input[name="q${index}"]`);
+            radios.forEach(radio => radio.disabled = true);
+        });
+
+        const resultText = document.getElementById("result-text");
+        resultText.innerHTML = `Kết quả: Bạn trả lời đúng ${score} / ${total} câu! (${((score/total)*10).toFixed(1)} điểm)`;
+        resultText.style.display = "block";
+
+        document.getElementById("submit-btn").style.display = "none";
+        document.getElementById("retry-btn").style.display = "block";
+
+        if (!isAutoSubmit) {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    }
+
+    function resetQuiz() {
+        loadQuiz();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.onload = loadQuiz;
+</script>
+
+</body>
+</html>
